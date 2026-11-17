@@ -1476,15 +1476,15 @@ const Cloud={ref:null,busy:false,dirty:false,t:null,on:false,last:0,sent:0,unsub
      throw {code:'conflito'};}
    catch(e){novos.forEach(l=>{delete S.logSent[l.id];});throw e;}},
  retry(){if(this.ref||this.tries>=6)return;this.tries=(this.tries||0)+1;this.init();},
- now(){if(!this.ref)return;clearTimeout(this.t);this.dirty=true;this.flush();},
- push(){if(!this.ref)return;this.dirty=true;clearTimeout(this.t);this.t=setTimeout(()=>this.flush(),SHEET?8000:2500);},
+ now(){if(!this.ref)return;clearTimeout(this.t);this.t=null;this.dirty=true;this.flush();},
+ push(){if(!this.ref)return;this.dirty=true;if(this.t)return;this.t=setTimeout(()=>{this.t=null;this.flush();},SHEET?4000:2500);},
  async flush(){if(!this.ref||this.busy||!this.dirty)return;this.busy=true;this.dirty=false;
    if(SHEET){try{await this.sheetFlush();}catch(e){this.fails=(this.fails||0)+1;this.dirty=true;this.on=false;setTimeout(()=>this.push(),20000);}this.busy=false;hud();banner();if(this.dirty&&this.on)this.push();return;}
    try{const sn=await this.ref.get();if(sn.exists){const d=sn.data();if(d&&d.json&&d.ts!==this.sent){S=merge(S,JSON.parse(d.json));localSave();}}
      this.sent=S.ts;const L=(S.log||[]).slice(-1)[0];await this.ref.set({json:JSON.stringify(S),ts:S.ts,stars:totalStars(),robux:robux(),minutos:mins(),moedas:S.coins,agora:S.live?`${S.live.nome} (${S.live.sub}) pergunta ${S.live.pos} de ${S.live.total}`:'',ultima:L?`${L.nome} (${L.sub}) ${L.res} ${L.pct}% ${L.stars}★ ${L.min}min`:''});this.last=Date.now();this.on=true;this.fails=0;banner();}
    catch(e){this.fails=(this.fails||0)+1;this.dirty=true;if(!(e&&e.code==='unavailable'))this.on=false;banner();setTimeout(()=>this.push(),15000);}
    this.busy=false;hud();if(this.dirty)this.push();}};
-const GRANTS=[{id:'2026-11-15-port-m1m2',para:'olivia',coins:650,stars:{p1:3,p2:2}},{id:'2026-11-16-port-m1a6',para:'olivia',coins:1850,stars:{p1:3,p2:2,p3:2,p4:2,p5:2,p6:2}}];
+const GRANTS=[{id:'2026-11-15-port-m1m2',para:'olivia',coins:650,stars:{p1:3,p2:2}},{id:'2026-11-16-port-m1a6',para:'olivia',coins:1850,stars:{p1:3,p2:2,p3:2,p4:2,p5:2,p6:2}},{id:'2026-11-17-cie-c1a8',para:'olivia',coins:0,stars:{c1:2,c2:2,c3:3,c4:2,c5:3,c6:3,c8:3,'boss-cie':3}}];
 function applyGrants(){let ch=false;S.grants=S.grants||{};GRANTS.forEach(g=>{if(S.grants[g.id])return;if(SHEET&&g.para&&!plain(NOME||'').startsWith(g.para))return;S.grants[g.id]=1;ch=true;
   for(const k in g.stars)S.stars[k]=Math.max(S.stars[k]||0,g.stars[k]);S.earned=Math.max(S.earned||0,(S.spent||0)+g.coins);S.coins=Math.max(0,S.earned-(S.spent||0));});
  if(ch){localSave();Cloud.push();}return ch;}
@@ -1519,7 +1519,7 @@ function login(msg){NAV.cur={s:'login'};$('#hudin').innerHTML='<span class="pill
  const go=async()=>{const v=$('#lp').value.trim();if(!v)return;const b=$('#lb');b.disabled=true;b.textContent='Entrando...';$('#lm').textContent='';
   try{const r=await sheetCall({acao:'entrar',pin:v});if(!r.ok){$('#lm').textContent=r.erro==='pin'?'PIN não encontrado. Confira e tente de novo.':'Não deu certo agora. Tente de novo.';b.disabled=false;b.textContent='Entrar';return;}
    PIN=v;try{localStorage.setItem('cidade-pin',v);}catch(e){}setNome(r.nome);KEY='cidade-v2-'+PIN;S=def();load();if(r.estado)S=merge(S,r.estado);Cloud.ref='sheet';Cloud.known=r.versao||0;Cloud.on=true;Cloud.fails=0;
-   applyGrants();localSave();hud();banner();if(S.seenHelp)city();else help();Cloud.now();}
+   applyGrants();localSave();if(S.seenHelp)city();else help();hud();banner();Cloud.now();}
   catch(e){$('#lm').textContent='Sem internet. Confira a conexão e tente de novo.';b.disabled=false;b.textContent='Entrar';}};
  $('#lb').onclick=go;$('#lp').onkeydown=e=>{if(e.key==='Enter')go();};setTimeout(()=>$('#lp')&&$('#lp').focus(),100);}
 function refresh(){applyGrants();hud();const c=NAV.cur.s;if(c==='city')city();else if(c==='parents'&&pinOK)parents();else if(c==='house')house();}
@@ -1567,7 +1567,7 @@ function flyCoins(el){if(calm()||!el||!el.getBoundingClientRect)return;const a=e
 
 /* ---------- barra do topo ---------- */
 function hud(){if(NAV.cur.s==='login')return;$('#hudin').innerHTML=`<button class="homeb" data-act="city" aria-label="Voltar para a cidade">🏙️ <span>Cidade</span></button>
- <span class="pill" id="pc" title="Moedas"><span class="c">🪙</span>${S.coins}</span><span class="pill st" title="Estrelas">⭐ ${totalStars()}</span><span class="pill rb" title="Robux conquistados">⬡ ${robux()} Robux</span><span class="pill cl" title="${INCLAUDE?(Cloud.on?'Progresso salvo na nuvem':'Salvo só neste aparelho'):'Progresso salvo neste aparelho'}">${SHEET?(Cloud.on?'☁️':'📶'):INCLAUDE?(Cloud.on?'☁️':'📱'):(LOCAL_OK?'💾':'⚠️')}</span><span class="sp"></span>
+ <span class="pill" id="pc" title="Moedas"><span class="c">🪙</span>${S.coins}</span><span class="pill st" title="Estrelas">⭐ ${totalStars()}</span><span class="pill rb" title="Robux conquistados">⬡ ${robux()} Robux</span><span class="pill cl" title="${INCLAUDE?(Cloud.on?'Progresso salvo na nuvem':'Salvo só neste aparelho'):'Progresso salvo neste aparelho'}">${SHEET?(Cloud.on?'☁️'+(Cloud.last?' '+new Date(Cloud.last).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):''):'📶'):INCLAUDE?(Cloud.on?'☁️':'📱'):(LOCAL_OK?'💾':'⚠️')}</span><span class="sp"></span>
  <button class="ib" data-act="house" aria-label="Minha casa e loja">🏠</button><button class="ib" data-act="book" aria-label="Meu caderno">📒</button><button class="ib" data-act="help" aria-label="Como jogar">❓</button><button class="ib" data-act="sound" aria-label="Som">${S.sound?'🔊':'🔇'}</button><button class="ib" data-act="parents" aria-label="Área dos pais">🔒</button>`;}
 
 /* ---------- cidade ---------- */
@@ -2003,7 +2003,7 @@ document.addEventListener('keydown',e=>{if(R&&R.keys&&R.keys[e.key]&&!/INPUT|TEX
 let lastIn=Date.now();['pointerdown','keydown'].forEach(ev=>addEventListener(ev,()=>{lastIn=Date.now();},{passive:true}));
 setInterval(()=>{if(NAV.cur.s!=='play'&&NAV.cur.s!=='lesson')return;if(document.visibilityState!=='visible'||Date.now()-lastIn>90000)return;const id=NAV.cur.sub;S.time[id]=(S.time[id]||0)+1;
  if(S.time[id]>=3600&&!S.hour[id]){S.hour[id]=1;S.coins+=150;S.earned+=150;toast('🏆 1 hora de estudo neste prédio! +150 moedas');confetti();save();hud();}else if(S.time[id]%20===0){localSave();Cloud.push();}},1000);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&SHEET)Cloud.pull();if(document.visibilityState==='hidden'){clearTimeout(ssT);localSave();if(Cloud.ref){clearTimeout(Cloud.t);Cloud.dirty=true;Cloud.flush();}}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&SHEET)Cloud.pull();if(document.visibilityState==='hidden'){clearTimeout(ssT);localSave();if(Cloud.ref){clearTimeout(Cloud.t);Cloud.t=null;Cloud.dirty=true;Cloud.flush();}}});
 addEventListener('resize',fitTown);
 
 /* ---------- início ---------- */
