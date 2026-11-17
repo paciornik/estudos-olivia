@@ -1484,7 +1484,7 @@ const Cloud={ref:null,busy:false,dirty:false,t:null,on:false,last:0,sent:0,unsub
      this.sent=S.ts;const L=(S.log||[]).slice(-1)[0];await this.ref.set({json:JSON.stringify(S),ts:S.ts,stars:totalStars(),robux:robux(),minutos:mins(),moedas:S.coins,agora:S.live?`${S.live.nome} (${S.live.sub}) pergunta ${S.live.pos} de ${S.live.total}`:'',ultima:L?`${L.nome} (${L.sub}) ${L.res} ${L.pct}% ${L.stars}★ ${L.min}min`:''});this.last=Date.now();this.on=true;this.fails=0;banner();}
    catch(e){this.fails=(this.fails||0)+1;this.dirty=true;if(!(e&&e.code==='unavailable'))this.on=false;banner();setTimeout(()=>this.push(),15000);}
    this.busy=false;hud();if(this.dirty)this.push();}};
-const GRANTS=[{id:'2026-11-15-port-m1m2',para:'olivia',coins:650,stars:{p1:3,p2:2}},{id:'2026-11-16-port-m1a6',para:'olivia',coins:1850,stars:{p1:3,p2:2,p3:2,p4:2,p5:2,p6:2}},{id:'2026-11-17-cie-c1a8',para:'olivia',coins:0,stars:{c1:2,c2:2,c3:3,c4:2,c5:3,c6:3,c8:3,'boss-cie':3}}];
+const GRANTS=[{id:'2026-11-15-port-m1m2',para:'olivia',coins:650,stars:{p1:3,p2:2}},{id:'2026-11-16-port-m1a6',para:'olivia',coins:1850,stars:{p1:3,p2:2,p3:2,p4:2,p5:2,p6:2}},{id:'2026-11-17-cie-c1a8',para:'olivia',coins:0,stars:{c1:2,c2:2,c3:3,c4:2,c5:3,c6:3,c8:3,'boss-cie':3}},{id:'2026-11-17-cie-moedas-c7',para:'olivia',coins:4446,stars:{c7:3}}];
 function applyGrants(){let ch=false;S.grants=S.grants||{};GRANTS.forEach(g=>{if(S.grants[g.id])return;if(SHEET&&g.para&&!plain(NOME||'').startsWith(g.para))return;S.grants[g.id]=1;ch=true;
   for(const k in g.stars)S.stars[k]=Math.max(S.stars[k]||0,g.stars[k]);S.earned=Math.max(S.earned||0,(S.spent||0)+g.coins);S.coins=Math.max(0,S.earned-(S.spent||0));});
  if(ch){localSave();Cloud.push();}return ch;}
