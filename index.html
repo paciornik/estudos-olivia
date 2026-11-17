@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Cidade da Olívia</title>
+<title>Cidade dos Estudos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -47,7 +47,7 @@ button{cursor:pointer}
 #hud .in{max-width:760px;margin:0 auto;padding:8px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .pill{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:5px 12px;font-weight:900;background:#fff7dd;font-variant-numeric:tabular-nums;white-space:nowrap}
 .pill.st{background:#efeaff}
-#cloudwarn{position:fixed;left:0;right:0;top:0;z-index:60;background:#ffd7d7;color:#7a0d14;padding:10px 16px;font-weight:700;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.2)}#cloudwarn button{margin-left:8px;border:0;border-radius:10px;padding:6px 12px;font-weight:900;background:#7a0d14;color:#fff}.pill.cl{padding:5px 8px;background:#eef2fb}.pill.rb{background:#dff8ee;color:#0d6b4c}
+#cloudwarn{position:fixed;left:0;right:0;top:0;z-index:60;background:#ffd7d7;color:#7a0d14;padding:10px 16px;font-weight:700;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.2)}#cloudwarn.soft{background:#fff3c9;color:#5a4300}#cloudwarn.soft button{background:#5a4300}#cloudwarn button{margin-left:8px;border:0;border-radius:10px;padding:6px 12px;font-weight:900;background:#7a0d14;color:#fff}.pill.cl{padding:5px 8px;background:#eef2fb}.pill.rb{background:#dff8ee;color:#0d6b4c}
 .pill .c{display:inline-block;animation:spin 2.4s linear infinite}
 @keyframes spin{to{transform:rotateY(360deg)}}
 #hud .sp{flex:1}
@@ -1422,7 +1422,8 @@ items:[
 <script>
 (()=>{'use strict';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-const app=$('#app'),KEY='cidade-olivia-v1';
+const app=$('#app');let KEY='cidade-olivia-v1';
+const SHEET_URL='https://script.google.com/macros/s/AKfycbxFPecxyUzpjAdDR_c14sH3JvvUJcf7wrKDO-wT5b8-tqhAC5qDVO63KzVsw_yqspSP/exec',SHEET=/^https?:\/\//.test(SHEET_URL);let PIN='',NOME='';try{PIN=localStorage.getItem('cidade-pin')||'';NOME=localStorage.getItem('cidade-nome')||'';}catch(e){}if(SHEET&&PIN)KEY='cidade-v2-'+PIN;
 const DATA=window.OLI_DATA=window.OLI_DATA||{};
 const SUBJ=[
  {id:'port',name:'Português',place:'Correio',sh:'Correio',e:'📮',date:'2026-11-16',c:'#ff6654',x:0,y:0,h:72},
@@ -1433,7 +1434,7 @@ const SUBJ=[
 ];
 const SHOP=[['flor','🌷','Canteiro de flores',40],['bal','🎈','Balões',50],['arv','🌳','Árvore',60],['skate','🛹','Skate',100],['sofa','🛋️','Sofá',120],['gato','🐱','Gatinho',150],['cao','🐶','Cachorrinho',150],['bike','🚲','Bicicleta',180],['tv','📺','TV gigante',200],['pap','🦜','Papagaio',220],['game','🎮','Videogame',250],['esc','🛝','Escorregador',280],['sorv','🍦','Sorveteria',300],['carro','🚗','Carro',400],['pisc','🏊','Piscina',500],['uni','🦄','Unicórnio',600],['heli','🚁','Helicóptero',800],['cast','🏰','Castelo',1000]].map(a=>({id:a[0],e:a[1],n:a[2],p:a[3]}));
 const SKINS=[['👧',0],['🦊',120],['🐼',120],['🐯',160],['🤖',200],['🧙‍♀️',260],['👩‍🚀',300],['🦸‍♀️',350],['🐉',500]];
-const def=()=>({v:1,ts:0,epoch:0,spent:0,grants:{},log:[],live:null,seenAt:0,coins:0,earned:0,stars:{},got:{},time:{},hour:{},notes:[],texts:[],wrong:[],owned:[],skins:['👧'],skin:'👧',draft:{},cfg:{pin:'2026',cap:800,paid:0,t:0},sound:true});
+const def=()=>({v:1,ts:0,epoch:0,spent:0,grants:{},logSent:{},log:[],live:null,seenAt:0,coins:0,earned:0,stars:{},got:{},time:{},hour:{},notes:[],texts:[],wrong:[],owned:[],skins:['👧'],skin:'👧',draft:{},cfg:{pin:'2026',cap:800,paid:0,t:0},sound:true});
 let S=def(),R=null,pinOK=false,_c={s:'city'};
 const NAV={get cur(){return _c;},set cur(v){_c=v;document.body.classList.toggle('inplay',v.s==='play'||v.s==='lesson');}};
 
@@ -1453,29 +1454,41 @@ function merge(a,b){a=normS(a);b=normS(b);if((a.epoch||0)!==(b.epoch||0))return 
  const uni=(x,y,f)=>{const s=new Set((x||[]).map(f));return (x||[]).concat((y||[]).filter(i=>!s.has(f(i))));};
  m.notes=uni(base.notes,o.notes,i=>i.id);m.texts=uni(base.texts,o.texts,i=>i.id).slice(0,40);m.wrong=uni(base.wrong,o.wrong,i=>i.q).slice(0,60);
  m.owned=[...new Set([...(base.owned||[]),...(o.owned||[])])];m.skins=[...new Set([...(base.skins||[]),...(o.skins||[])])];
- m.seenHelp=base.seenHelp||o.seenHelp;m.log=uni(base.log,o.log,i=>i.id).sort((x,y)=>x.at-y.at).slice(-300);m.seenAt=Math.max(base.seenAt||0,o.seenAt||0);m.grants=Object.assign({},o.grants,base.grants);
+ m.seenHelp=base.seenHelp||o.seenHelp;m.logSent=Object.assign({},o.logSent,base.logSent);m.log=uni(base.log,o.log,i=>i.id).sort((x,y)=>x.at-y.at).slice(-300);m.seenAt=Math.max(base.seenAt||0,o.seenAt||0);m.grants=Object.assign({},o.grants,base.grants);
  m.earned=Math.max(base.earned||0,o.earned||0);m.spent=Math.max(base.spent||0,o.spent||0);m.coins=Math.max(0,m.earned-m.spent);
  m.cfg=Object.assign({},((o.cfg&&o.cfg.t)||0)>((base.cfg&&base.cfg.t)||0)?o.cfg:base.cfg);return m;}
 const Cloud={ref:null,busy:false,dirty:false,t:null,on:false,last:0,sent:0,unsub:null,
- async init(){try{if(!window.claude||!window.claude.use){banner();return;}const db=await window.claude.use('db');if(!db){banner();return;}
+ async init(){if(SHEET){if(!PIN)return;return this.sheetInit();}try{if(!window.claude||!window.claude.use){banner();return;}const db=await window.claude.use('db');if(!db){banner();return;}
    this.ref=db.doc('game/olivia');const snap=await this.ref.get();
    if(snap.exists){const d=snap.data();if(d&&d.json){S=merge(S,JSON.parse(d.json));localSave();refresh();}}
    this.on=true;hud();this.dirty=true;await this.flush();
    this.unsub=this.ref.onSnapshot(sn=>{try{if(!sn.exists||sn.metadata.hasPendingWrites)return;const d=sn.data();if(!d||!d.json||d.ts===this.sent)return;
      S=merge(S,JSON.parse(d.json));localSave();refresh();}catch(e){}},()=>{});}catch(e){this.ref=null;this.on=false;hud();banner();}},
+ async sheetInit(){this.ref='sheet';try{const r=await sheetCall({acao:'entrar',pin:PIN});if(!r.ok){if(r.erro==='pin'){logout(true);return;}throw r;}
+   setNome(r.nome);if(r.estado)S=merge(S,r.estado);this.known=r.versao||0;localSave();this.on=true;this.fails=0;refresh();banner();this.dirty=true;await this.flush();}
+  catch(e){this.on=false;this.fails=(this.fails||0)+1;hud();banner();setTimeout(()=>{if(!this.on)this.sheetInit();},20000);}},
+ async pull(){if(!SHEET||!PIN||this.busy)return;try{const r=await sheetCall({acao:'entrar',pin:PIN});if(r.ok){this.on=true;this.fails=0;if(r.versao!==this.known&&r.estado){S=merge(S,r.estado);this.known=r.versao;localSave();if(NAV.cur.s!=='play'&&NAV.cur.s!=='lesson')refresh();else hud();}}}catch(e){}banner();},
+ async sheetFlush(){const novos=(S.log||[]).filter(l=>!(S.logSent||{})[l.id]);S.logSent=S.logSent||{};novos.forEach(l=>{S.logSent[l.id]=1;});
+   try{for(let k=0;k<3;k++){const r=await sheetCall({acao:'salvar',pin:PIN,conhecida:this.known||0,estado:slim(),resumo:sheetResumo(),novos:k?[]:novos.map(histRow)});
+      if(r.ok){this.known=r.versao;this.on=true;this.fails=0;this.last=Date.now();localSave();return;}
+      if(r.conflito){S=merge(S,r.estado||{});this.known=r.versao;localSave();if(NAV.cur.s!=='play'&&NAV.cur.s!=='lesson')refresh();continue;}
+      if(r.erro==='pin'){logout(true);return;}throw r;}
+     throw {code:'conflito'};}
+   catch(e){novos.forEach(l=>{delete S.logSent[l.id];});throw e;}},
  retry(){if(this.ref||this.tries>=6)return;this.tries=(this.tries||0)+1;this.init();},
  now(){if(!this.ref)return;clearTimeout(this.t);this.dirty=true;this.flush();},
- push(){if(!this.ref)return;this.dirty=true;clearTimeout(this.t);this.t=setTimeout(()=>this.flush(),2500);},
+ push(){if(!this.ref)return;this.dirty=true;clearTimeout(this.t);this.t=setTimeout(()=>this.flush(),SHEET?8000:2500);},
  async flush(){if(!this.ref||this.busy||!this.dirty)return;this.busy=true;this.dirty=false;
+   if(SHEET){try{await this.sheetFlush();}catch(e){this.fails=(this.fails||0)+1;this.dirty=true;this.on=false;setTimeout(()=>this.push(),20000);}this.busy=false;hud();banner();if(this.dirty&&this.on)this.push();return;}
    try{const sn=await this.ref.get();if(sn.exists){const d=sn.data();if(d&&d.json&&d.ts!==this.sent){S=merge(S,JSON.parse(d.json));localSave();}}
      this.sent=S.ts;const L=(S.log||[]).slice(-1)[0];await this.ref.set({json:JSON.stringify(S),ts:S.ts,stars:totalStars(),robux:robux(),minutos:mins(),moedas:S.coins,agora:S.live?`${S.live.nome} (${S.live.sub}) pergunta ${S.live.pos} de ${S.live.total}`:'',ultima:L?`${L.nome} (${L.sub}) ${L.res} ${L.pct}% ${L.stars}★ ${L.min}min`:''});this.last=Date.now();this.on=true;this.fails=0;banner();}
    catch(e){this.fails=(this.fails||0)+1;this.dirty=true;if(!(e&&e.code==='unavailable'))this.on=false;banner();setTimeout(()=>this.push(),15000);}
    this.busy=false;hud();if(this.dirty)this.push();}};
-const GRANTS=[{id:'2026-11-15-port-m1m2',coins:650,stars:{p1:3,p2:2}},{id:'2026-11-16-port-m1a6',coins:1850,stars:{p1:3,p2:2,p3:2,p4:2,p5:2,p6:2}}];
-function applyGrants(){let ch=false;S.grants=S.grants||{};GRANTS.forEach(g=>{if(S.grants[g.id])return;S.grants[g.id]=1;ch=true;
+const GRANTS=[{id:'2026-11-15-port-m1m2',para:'olivia',coins:650,stars:{p1:3,p2:2}},{id:'2026-11-16-port-m1a6',para:'olivia',coins:1850,stars:{p1:3,p2:2,p3:2,p4:2,p5:2,p6:2}}];
+function applyGrants(){let ch=false;S.grants=S.grants||{};GRANTS.forEach(g=>{if(S.grants[g.id])return;if(SHEET&&g.para&&!plain(NOME||'').startsWith(g.para))return;S.grants[g.id]=1;ch=true;
   for(const k in g.stars)S.stars[k]=Math.max(S.stars[k]||0,g.stars[k]);S.earned=Math.max(S.earned||0,(S.spent||0)+g.coins);S.coins=Math.max(0,S.earned-(S.spent||0));});
  if(ch){localSave();Cloud.push();}return ch;}
-function resumo(){const L=(S.log||[]).slice(-12);const lines=['📊 Cidade da Olívia · '+new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),
+function resumo(){const L=(S.log||[]).slice(-12);const lines=['📊 '+(NOME||'Olívia')+' · Cidade dos Estudos · '+new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),
  '🪙 '+S.coins+' moedas · ⭐ '+totalStars()+' estrelas · ⬡ '+robux()+' Robux · ⏱️ '+mins()+' min de estudo',''];
  SUBJ.forEach(x=>{const D=DATA[x.id];if(!D)return;const st=D.missions.map((M,i)=>(i+1)+(S.stars[M.id]?'★'.repeat(S.stars[M.id]):'·')).join(' ');const b=S.stars['boss-'+x.id];lines.push(x.e+' '+x.name+': '+st+(b?' · chefão '+'★'.repeat(b):''));});
  if(L.length){lines.push('','Últimas missões:');L.slice().reverse().forEach(l=>lines.push('• '+new Date(l.at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' '+l.nome+' ('+((SUBJ.find(z=>z.id===l.sub)||{}).name||'')+'): '+(l.res==='concluiu'?'★'.repeat(l.stars||1)+' ':l.res+' ')+l.pct+'% de 1ª, '+l.erros+' erros, '+l.min+' min'));}
@@ -1485,13 +1498,30 @@ async function sendText(t,title){try{if(navigator.share){await navigator.share({
 function prompt0(t){const d=document.createElement('div');d.className='box';d.style.cssText='position:fixed;inset:10% 16px auto;z-index:70;max-height:70vh;overflow:auto';d.innerHTML='<p><b>Copie o texto abaixo:</b></p><textarea style="width:100%;min-height:200px">'+esc(t)+'</textarea><button class="btn">Fechar</button>';document.body.appendChild(d);d.querySelector('textarea').select();d.querySelector('button').onclick=()=>d.remove();}
 function backup(){return 'CIDADE1:'+btoa(unescape(encodeURIComponent(JSON.stringify(S))));}
 function restore(code){try{const t=code.trim().replace(/^CIDADE1:/,'');const o=JSON.parse(decodeURIComponent(escape(atob(t))));S=merge(S,o);localSave();refresh();return true;}catch(e){return false;}}
-function banner(){let b=$('#cloudwarn');const bad=INCLAUDE?(!Cloud.on&&(Date.now()-BOOT>12000||Cloud.fails)):!LOCAL_OK;
+function banner(){let b=$('#cloudwarn');const bad=SHEET?(PIN&&!Cloud.on&&Cloud.fails>=2):INCLAUDE?(!Cloud.on&&(Date.now()-BOOT>12000||Cloud.fails)):!LOCAL_OK;
  if(!bad){if(b)b.remove();return;}if(!b){b=document.createElement('div');b.id='cloudwarn';document.body.appendChild(b);}
- b.innerHTML=INCLAUDE?'⚠️ <b>Seu progresso não está sendo salvo na nuvem.</b> Chame o papai antes de continuar. <button type="button" id="cwr">Tentar de novo</button>':'⚠️ <b>Este navegador não está salvando o progresso</b> (modo anônimo?). Chame o papai antes de continuar. <button type="button" id="cwr">Ok</button>';
- $('#cwr').onclick=()=>{Cloud.tries=0;Cloud.fails=0;if(Cloud.ref)Cloud.now();else Cloud.retry();toast('Tentando salvar de novo...');};}
+ b.classList.toggle('soft',SHEET);b.innerHTML=SHEET?'📶 <b>Sem internet agora.</b> Pode continuar: seu progresso está guardado neste aparelho e vai para a nuvem quando a internet voltar. <button type="button" id="cwr">Tentar agora</button>':INCLAUDE?'⚠️ <b>Seu progresso não está sendo salvo na nuvem.</b> Chame o papai antes de continuar. <button type="button" id="cwr">Tentar de novo</button>':'⚠️ <b>Este navegador não está salvando o progresso</b> (modo anônimo?). Chame o papai antes de continuar. <button type="button" id="cwr">Ok</button>';
+ $('#cwr').onclick=()=>{if(SHEET){Cloud.fails=0;Cloud.dirty=true;Cloud.flush();toast('Tentando de novo...');return;}Cloud.tries=0;Cloud.fails=0;if(Cloud.ref)Cloud.now();else Cloud.retry();toast('Tentando salvar de novo...');};}
 const BOOT=Date.now(),INCLAUDE=!!(window.claude&&window.claude.use);
 const LOCAL_OK=(()=>{try{localStorage.setItem('__t','1');const ok=localStorage.getItem('__t')==='1';localStorage.removeItem('__t');return ok;}catch(e){return false;}})();
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
+async function sheetCall(body){const ac=new AbortController(),t=setTimeout(()=>ac.abort(),25000);try{const r=await fetch(SHEET_URL,{method:'POST',body:JSON.stringify(body),signal:ac.signal});return await r.json();}finally{clearTimeout(t);}}
+function slim(){const o=JSON.parse(JSON.stringify(S));o.draft={};o.log=(o.log||[]).slice(-150).map(l=>Object.assign({},l,{errou:(l.errou||[]).slice(0,3)}));o.wrong=(o.wrong||[]).slice(0,40);o.texts=(o.texts||[]).slice(0,25);return o;}
+function histRow(l){return {at:l.at,materia:(SUBJ.find(z=>z.id===l.sub)||{}).name||'',missao:l.nome,resultado:l.res==='concluiu'?'★'.repeat(l.stars||1):l.res,pct:l.pct,erros:l.erros,min:l.min};}
+function sheetResumo(){const L=(S.log||[]).slice(-1)[0],sn=x=>(SUBJ.find(z=>z.id===x)||{}).name||'';return {estrelas:totalStars(),moedas:S.coins,robux:robux(),minutos:mins(),
+ ultima:L?`${sn(L.sub)} · ${L.nome} · ${L.res==='concluiu'?'★'.repeat(L.stars||1):L.res} · ${L.pct}% · ${new Date(L.at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}`:'',
+ agora:S.live?`${sn(S.live.sub)} · ${S.live.nome} · pergunta ${S.live.pos} de ${S.live.total}`:''};}
+function setNome(n){NOME=n||NOME;try{localStorage.setItem('cidade-nome',NOME);}catch(e){}}
+function logout(bad){try{localStorage.removeItem('cidade-pin');localStorage.removeItem('cidade-nome');}catch(e){}PIN='';NOME='';Cloud.on=false;Cloud.ref=null;login(bad?'Esse PIN não está mais cadastrado. Fale com o papai.':'');}
+function login(msg){NAV.cur={s:'login'};$('#hudin').innerHTML='<span class="pill">🏙️ Cidade dos Estudos</span>';
+ app.innerHTML=`<div class="page narrow" style="padding-top:40px;text-align:center"><div style="font-size:4rem">🏙️</div><h1>Cidade dos Estudos</h1><p class="lead" style="margin:0 auto">Digite o seu PIN para entrar. Seu progresso fica salvo em qualquer aparelho.</p>
+ <input id="lp" type="password" inputmode="numeric" autocomplete="off" aria-label="Seu PIN" style="font-size:2rem;text-align:center;letter-spacing:.3em"><button class="btn big" id="lb">Entrar</button><p id="lm" class="lead" style="margin:0 auto;color:#a51f24">${esc(msg||'')}</p></div>`;
+ const go=async()=>{const v=$('#lp').value.trim();if(!v)return;const b=$('#lb');b.disabled=true;b.textContent='Entrando...';$('#lm').textContent='';
+  try{const r=await sheetCall({acao:'entrar',pin:v});if(!r.ok){$('#lm').textContent=r.erro==='pin'?'PIN não encontrado. Confira e tente de novo.':'Não deu certo agora. Tente de novo.';b.disabled=false;b.textContent='Entrar';return;}
+   PIN=v;try{localStorage.setItem('cidade-pin',v);}catch(e){}setNome(r.nome);KEY='cidade-v2-'+PIN;S=def();load();if(r.estado)S=merge(S,r.estado);Cloud.ref='sheet';Cloud.known=r.versao||0;Cloud.on=true;Cloud.fails=0;
+   applyGrants();localSave();hud();banner();if(S.seenHelp)city();else help();Cloud.now();}
+  catch(e){$('#lm').textContent='Sem internet. Confira a conexão e tente de novo.';b.disabled=false;b.textContent='Entrar';}};
+ $('#lb').onclick=go;$('#lp').onkeydown=e=>{if(e.key==='Enter')go();};setTimeout(()=>$('#lp')&&$('#lp').focus(),100);}
 function refresh(){applyGrants();hud();const c=NAV.cur.s;if(c==='city')city();else if(c==='parents'&&pinOK)parents();else if(c==='house')house();}
 
 const Mic={d:null,on:false,tg:null,async init(){try{if(!window.claude||!window.claude.use)return;const d=await window.claude.use('dictation');if(!d)return;this.d=d;
@@ -1536,8 +1566,8 @@ function flyCoins(el){if(calm()||!el||!el.getBoundingClientRect)return;const a=e
   s.animate([{transform:'translate(0,0) scale(1)'},{transform:`translate(${(Math.random()-.5)*90}px,-50px) scale(1.3)`,offset:.3},{transform:`translate(${b.left-a.left-a.width/2}px,${b.top-a.top-a.height/2}px) scale(.5)`}],{duration:650+i*90,easing:'ease-in'}).onfinish=()=>s.remove();}}
 
 /* ---------- barra do topo ---------- */
-function hud(){$('#hudin').innerHTML=`<button class="homeb" data-act="city" aria-label="Voltar para a cidade">🏙️ <span>Cidade</span></button>
- <span class="pill" id="pc" title="Moedas"><span class="c">🪙</span>${S.coins}</span><span class="pill st" title="Estrelas">⭐ ${totalStars()}</span><span class="pill rb" title="Robux conquistados">⬡ ${robux()} Robux</span><span class="pill cl" title="${INCLAUDE?(Cloud.on?'Progresso salvo na nuvem':'Salvo só neste aparelho'):'Progresso salvo neste aparelho'}">${INCLAUDE?(Cloud.on?'☁️':'📱'):(LOCAL_OK?'💾':'⚠️')}</span><span class="sp"></span>
+function hud(){if(NAV.cur.s==='login')return;$('#hudin').innerHTML=`<button class="homeb" data-act="city" aria-label="Voltar para a cidade">🏙️ <span>Cidade</span></button>
+ <span class="pill" id="pc" title="Moedas"><span class="c">🪙</span>${S.coins}</span><span class="pill st" title="Estrelas">⭐ ${totalStars()}</span><span class="pill rb" title="Robux conquistados">⬡ ${robux()} Robux</span><span class="pill cl" title="${INCLAUDE?(Cloud.on?'Progresso salvo na nuvem':'Salvo só neste aparelho'):'Progresso salvo neste aparelho'}">${SHEET?(Cloud.on?'☁️':'📶'):INCLAUDE?(Cloud.on?'☁️':'📱'):(LOCAL_OK?'💾':'⚠️')}</span><span class="sp"></span>
  <button class="ib" data-act="house" aria-label="Minha casa e loja">🏠</button><button class="ib" data-act="book" aria-label="Meu caderno">📒</button><button class="ib" data-act="help" aria-label="Como jogar">❓</button><button class="ib" data-act="sound" aria-label="Som">${S.sound?'🔊':'🔇'}</button><button class="ib" data-act="parents" aria-label="Área dos pais">🔒</button>`;}
 
 /* ---------- cidade ---------- */
@@ -1546,7 +1576,7 @@ function lbl(x,y,z,act,txt,cls){const dx=x-170,dy=y-170;return `<button class="l
 function tree(x,y){return `<div class="bld" style="left:${x}px;top:${y}px;width:26px;height:26px;--h:30px;--c:#2e9e4f;cursor:default"><i class="top" style="box-shadow:none"></i><i class="s1" style="background:var(--c)"></i><i class="s2" style="background:var(--c)"></i></div>`;}
 function city(){NAV.cur={s:'city'};R=null;
  const nx=SUBJ.filter(s=>days(s.date)>=0)[0],rb=robux(),ms=maxStars();
- app.innerHTML=`<section class="hero"><div><p class="eyebrow">Semana de provas do 3º G</p><h1>Oi, Olívia! A cidade precisa de você.</h1><p class="lead">Entre nos prédios, complete as missões e ganhe moedas e estrelas. Estrelas viram Robux de verdade.</p><button class="btn sm helpb" data-act="help">❓ Como jogar</button></div>
+ app.innerHTML=`<section class="hero"><div><p class="eyebrow">Semana de provas do 3º G</p><h1>Oi, ${esc(NOME||'Olívia')}! A cidade precisa de você.</h1><p class="lead">Entre nos prédios, complete as missões e ganhe moedas e estrelas. Estrelas viram Robux de verdade.</p><button class="btn sm helpb" data-act="help">❓ Como jogar</button></div>
  ${nx?`<div class="nextexam">Próxima prova<b>${nx.name}</b>${dlabel(nx.date)} · ${dbadge(nx.date)[0]}</div>`:''}</section>
  <div class="townwrap"><i class="cloud"></i><i class="cloud b"></i><div class="town"><div class="plane">
  ${SUBJ.map(s=>cube({x:s.x,y:s.y,h:s.h,c:s.c,off:!DATA[s.id],act:'sub:'+s.id,label:s.place+', '+s.name,})).join('')}
@@ -1869,7 +1899,7 @@ function book(tab){tab=tab||'dicas';NAV.cur={s:'book',tab};R=null;let body='';
 function help(){NAV.cur={s:'help'};R=null;if(!S.seenHelp){S.seenHelp=1;save();}
  const pl=SUBJ.map(s=>`<tr><td>${s.e} ${s.place}</td><td>${s.name}</td><td class="n">${dlabel(s.date)}</td></tr>`).join('');
  app.innerHTML=`<div class="page help"><p class="eyebrow">Guia da cidade</p><h1>Como jogar 🎮</h1>
- <p class="lead">Oi, Olívia! Aqui você estuda para as provas jogando. Cada acerto vale moedas, e cada estrela vale Robux de verdade. Leia este guia uma vez e depois é só jogar!</p>
+ <p class="lead">Oi, ${esc(NOME||'Olívia')}! Aqui você estuda para as provas jogando. Cada acerto vale moedas, e cada estrela vale Robux de verdade. Leia este guia uma vez e depois é só jogar!</p>
 
  <div class="hbox"><h2>🏙️ 1. A cidade</h2><p>Cada prédio é uma matéria. Toque no prédio (ou na lista embaixo da cidade) para entrar.</p>
  <div class="tw"><table><thead><tr><th>Prédio</th><th>Matéria</th><th class="n">Prova</th></tr></thead><tbody>${pl}</tbody></table></div>
@@ -1938,6 +1968,7 @@ function parents(){NAV.cur={s:'parents'};R=null;
  app.innerHTML=`<div class="page"><h1>Área dos pais</h1>
  <div class="box"><h2>⬡ Robux</h2><p><b>${rb}</b> conquistados de ${S.cfg.cap} · <b>${S.cfg.paid}</b> já entregues · <b>${due}</b> a entregar</p><p class="lead">Regra: Robux = teto × estrelas ÷ total de estrelas possíveis (${totalStars()} de ${ms}). Cada missão vale até 3 estrelas: 1 por concluir, 2 com 70% de acertos de primeira, 3 com 90%. Matérias ainda não publicadas contam como 27 estrelas no total.</p>
  <div><button class="btn" id="paid">Marcar ${due} Robux como entregues</button></div></div>
+ ${SHEET?`<div class="box"><h2>👤 ${esc(NOME)}</h2><p class="lead">Para outra pessoa jogar neste aparelho, saia e entre com o PIN dela.</p><div><button class="btn" id="bout">Sair e trocar de pessoa</button></div></div>`:''}
  <div class="box"><h2>Resumo e cópia de segurança</h2><p class="lead">O resumo vai pronto para o WhatsApp. O código de segurança guarda tudo: se um dia o progresso sumir, cole o código aqui e ele volta.</p>
  <div class="row" style="justify-content:flex-start"><button class="btn" id="bres">📤 Enviar resumo</button><button class="btn" id="bbak">💾 Copiar código de segurança</button></div>
  <label for="rcode"><b>Restaurar a partir de um código</b></label><textarea id="rcode" rows="3" placeholder="Cole aqui o código que começa com CIDADE1:"></textarea><div><button class="btn" id="brst">Restaurar</button></div></div>
@@ -1953,8 +1984,9 @@ function parents(){NAV.cur={s:'parents'};R=null;
  <li>• O chefão abre depois de 5 missões e serve como revisão na manhã da prova.</li>
  <li>• "Errei e aprendi", no caderno, lista tudo o que ela errou: bom para revisar junto.</li></ul></div>
  <div class="box"><h2>Ajustes</h2><div class="frm"><label for="cap">Teto de Robux</label><input id="cap" type="number" min="0" step="10" value="${S.cfg.cap}"></div><div class="frm"><label for="pd">Robux já entregues</label><input id="pd" type="number" min="0" value="${S.cfg.paid}"></div><div class="frm"><label for="np">Senha desta área</label><input id="np" type="text" inputmode="numeric" value="${esc(S.cfg.pin)}"></div><div><button class="btn big" id="sv">Salvar ajustes</button></div>
- <p class="lead">${!INCLAUDE?'💾 Progresso salvo neste aparelho e navegador. Use sempre o mesmo aparelho. Para acompanhar de longe, peça o resumo pelo WhatsApp (botão abaixo).':Cloud.on?'☁️ Progresso salvo na nuvem: celular e computador mostram o mesmo jogo.'+(Cloud.last?' Última gravação: '+new Date(Cloud.last).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'.':''):'📱 Progresso salvo só neste aparelho. Ele não aparece em outros aparelhos.'}</p></div>
+ <p class="lead">${SHEET?'☁️ '+esc(NOME)+': progresso salvo na planilha do papai. Funciona em qualquer aparelho com o mesmo PIN.'+(Cloud.last?' Última gravação: '+new Date(Cloud.last).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'.':''):!INCLAUDE?'💾 Progresso salvo neste aparelho e navegador. Use sempre o mesmo aparelho. Para acompanhar de longe, peça o resumo pelo WhatsApp (botão abaixo).':Cloud.on?'☁️ Progresso salvo na nuvem: celular e computador mostram o mesmo jogo.'+(Cloud.last?' Última gravação: '+new Date(Cloud.last).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'.':''):'📱 Progresso salvo só neste aparelho. Ele não aparece em outros aparelhos.'}</p></div>
  <div class="box"><h2>Zerar tudo</h2><p class="lead">Apaga moedas, estrelas, caderno e tempo. Não dá para desfazer.</p><div><button class="btn" id="rs">Zerar progresso</button></div></div></div>`;
+ if($('#bout'))$('#bout').onclick=async()=>{const b=$('#bout');b.disabled=true;b.textContent='Salvando...';Cloud.dirty=true;try{if(Cloud.on)await Cloud.sheetFlush();}catch(e){}pinOK=false;logout(false);};
  $('#bres').onclick=()=>sendText(resumo(),'Progresso da Olívia');$('#bbak').onclick=()=>sendText(backup(),'Código de segurança');$('#brst').onclick=()=>{const v=$('#rcode').value;if(!v.trim())return toast('Cole o código primeiro.');toast(restore(v)?'Progresso restaurado!':'Código inválido.');};
  $('#paid').onclick=()=>{S.cfg.paid=rb;save();parents();toast('Anotado.');};
  $('#sv').onclick=()=>{S.cfg.cap=Math.max(0,+$('#cap').value||0);S.cfg.paid=Math.max(0,+$('#pd').value||0);S.cfg.pin=$('#np').value.trim()||'2026';S.cfg.t=Date.now();save();hud();parents();toast('Ajustes salvos.');};
@@ -1971,13 +2003,13 @@ document.addEventListener('keydown',e=>{if(R&&R.keys&&R.keys[e.key]&&!/INPUT|TEX
 let lastIn=Date.now();['pointerdown','keydown'].forEach(ev=>addEventListener(ev,()=>{lastIn=Date.now();},{passive:true}));
 setInterval(()=>{if(NAV.cur.s!=='play'&&NAV.cur.s!=='lesson')return;if(document.visibilityState!=='visible'||Date.now()-lastIn>90000)return;const id=NAV.cur.sub;S.time[id]=(S.time[id]||0)+1;
  if(S.time[id]>=3600&&!S.hour[id]){S.hour[id]=1;S.coins+=150;S.earned+=150;toast('🏆 1 hora de estudo neste prédio! +150 moedas');confetti();save();hud();}else if(S.time[id]%20===0){localSave();Cloud.push();}},1000);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){clearTimeout(ssT);localSave();if(Cloud.ref){clearTimeout(Cloud.t);Cloud.dirty=true;Cloud.flush();}}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&SHEET)Cloud.pull();if(document.visibilityState==='hidden'){clearTimeout(ssT);localSave();if(Cloud.ref){clearTimeout(Cloud.t);Cloud.dirty=true;Cloud.flush();}}});
 addEventListener('resize',fitTown);
 
 /* ---------- início ---------- */
-load();applyGrants();hud();if(S.seenHelp)city();else help();
+if(SHEET&&!PIN){login('');}else{load();applyGrants();hud();if(S.seenHelp)city();else help();}
 SUBJ.forEach(s=>{if(DATA[s.id])return;const sc=document.createElement('script');sc.src='data/'+s.id+'.js';sc.onload=()=>{hud();if(NAV.cur.s==='city')city();};sc.onerror=()=>{};document.head.appendChild(sc);});
-Cloud.init();Voice.init();Mic.init();setTimeout(banner,12500);setInterval(()=>{if(!Cloud.ref)Cloud.retry();banner();},20000);S.seenAt=Date.now();
+Cloud.init();Voice.init();Mic.init();setTimeout(banner,12500);setInterval(()=>{if(SHEET){if(PIN&&!Cloud.on&&!Cloud.busy){Cloud.dirty=true;Cloud.flush();}}else if(!Cloud.ref)Cloud.retry();banner();},20000);S.seenAt=Date.now();
 window.__oli={resumo,backup,restore,get S(){return S;},get R(){return R;},DATA,est,auto:false,merge,normS};
 })();
 </script>
